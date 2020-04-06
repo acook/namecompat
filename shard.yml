@@ -1,0 +1,13 @@
+name: namecompat
+version: 0.1.0
+
+authors:
+  - Anthony Cook <github@anthonymcook.com>
+
+targets:
+  namecompat:
+    main: src/namecompat.cr
+
+crystal: 0.33.0
+
+license: APL2
