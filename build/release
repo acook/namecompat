@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+crystal build src/namecompat.cr -o "bin/namecompat" | tee /dev/null
