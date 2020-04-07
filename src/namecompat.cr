@@ -28,8 +28,8 @@ module NameCompat
     end
 
     def fix_file(filename)
-      puts "FIXING: #{filename}"
       base = File.basename(filename)
+      base_no_ext = base[0, base.bytesize - File.extname(base).bytesize]
       if WINVALID_NAMES.includes? base
         puts "BAD NAME: #{filename}"
       end
@@ -49,13 +49,13 @@ module NameCompat
       skip << /^\./ unless affect_hidden
 
       Dir.open(filename) do |dir|
-        puts "DIR: #{dir}"
         dir.each do |entry|
           next if skip.any? {|pattern| pattern =~ entry }
-          puts "ENTRY: #{entry}"
           fix File.expand_path(entry,filename)
         end
       end
+
+      fix_file filename
     end
 
   end
