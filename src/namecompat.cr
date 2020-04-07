@@ -3,7 +3,7 @@ module NameCompat
   VERSION = "0.1.0"
 
   class NameFixer
-    WINVALID_CHARS = ["]",">","<",":","\"","/","\\","|","?","*"] + (0..31).map(&.unsafe_chr)
+    WINVALID_CHARS = [']','>','<',':','"','/','\\','|','?','*'].map(&.ord) + (0..31).to_a
     WINVALID_NAMES = %w(CON PRN AUX NUL COM1 COM2 COM3 COM4 COM5 COM6 COM7 COM8 COM9 LPT1 LPT2 LPT3 LPT4 LPT5 LPT6 LPT7 LPT8 LPT9)
 
     @filename : String
@@ -14,15 +14,50 @@ module NameCompat
       @default = default
     end
 
-    def fix
-      puts "WINVALID_CHARS: #{WINVALID_CHARS}"
-      puts "WINVALID_NAMES: #{WINVALID_NAMES}"
+    def fix(filename = @filename)
+      if File.directory? filename
+        fix_dir filename
+      else
+        fix_file filename
+      end
 
       # convert @filename to Path
       # if path directory, get files
       # check each filename vs names with and without ext
       # check each filename vs chars
     end
+
+    def fix_file(filename)
+      puts "FIXING: #{filename}"
+      base = File.basename(filename)
+      if WINVALID_NAMES.includes? base
+        puts "BAD NAME: #{filename}"
+      end
+      base.each_codepoint do |codepoint|
+        if WINVALID_CHARS.includes? codepoint
+          puts "BAD CHAR: #{codepoint.unsafe_chr} (#{codepoint})"
+        end
+      end
+    end
+
+    def fix_dir(filename, affect_hidden = false)
+      skip = [
+        /^\.$/,
+        /^\.\.$/
+      ]
+
+      skip << /^\./ unless affect_hidden
+
+      Dir.open(filename) do |dir|
+        puts "DIR: #{dir}"
+        dir.each do |entry|
+          next if skip.any? {|pattern| pattern =~ entry }
+          puts "ENTRY: #{entry}"
+          fix File.expand_path(entry,filename)
+        end
+      end
+    end
+
   end
 
   class CLI
@@ -46,7 +81,7 @@ module NameCompat
         @default_character = argv[1][0]
       end
 
-      @filename = argv.last
+      @filename = File.expand_path argv.last
       @env = env
       self
     end
