@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+command_exists() { command -v "$1" > /dev/null 2>&1; }
+
+if ! command_exists git; then
+  echo "git not found in PATH: $PATH"
+  exit 2
+fi
+
+this_path="$(git rev-parse --show-toplevel)"
+lib_path="$this_path/lib"
+
+mkdir "$lib_path"
+
+echo "installing Crystal..."
+if command_exists brew; then
+  brew install crystal-lang
+else
+  echo "enter password to install with apt or ctrl-c to do it yourself..."
+  curl https://dist.crystal-lang.org/apt/setup.sh | sudo bash
+  sudo apt-get install crystal libyaml-dev libxml2-dev
+fi
+
+echo "testing..."
+"$this_path/scripts/test"
